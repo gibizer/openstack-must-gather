@@ -125,11 +125,25 @@ data=$(oc get openstackdataplanenodesets --all-namespaces -o json | jq -j '
 ')
 
 while read -r node address username secret namespace; do
+    echo "gather_edpm_sos data:" "$node"
+done <<< "$data"
+
+
+while read -r node address username secret namespace; do
+    echo "processing input for gather_edpm_sos" "$node"
     [[ -z "$node" ]] && continue
     if [[ "${SOS_EDPM[0]}" == "all" || "${SOS_EDPM[*]}" == *"${node}"* ]]; then
+        echo "calling gather_edpm_sos on" "$node"
         run_bg gather_edpm_sos $node $address $username $secret $namespace
+        echo "queued gather_edpm_sos to the backgroud for" "$node" "$?"
     fi
 done <<< "$data"
 
+echo "gather_edpm_sos loop returned" "$?"
+
+
+while read -r node address username secret namespace; do
+    echo "gather_edpm_sos data after" "$node"
+done <<< "$data"
 
 [[ $CALLED -eq 1 ]] && wait_bg

@@ -18,10 +18,13 @@ CONCURRENCY=${CONCURRENCY:-5}
 # background.
 
 function run_bg {
+    echo "run_bg called with" "$@"
     while [[ $(jobs -r | wc -l) -ge $CONCURRENCY ]]; do
+        echo "run_bg waits for jobs" "$(jobs -r)"
         wait -n
     done
 
+    echo "run_bg executes" "$@"
     # Cannot use the alternative suggested by SC2294 which is just "$@"&
     # because that doesn't accomplish what we want, as it executes the first
     # element as the command and the rest as its parameters, so it cannot run
@@ -37,6 +40,7 @@ function run_bg {
 # Disable SC2120 in this to prevent SC2119 when called without the optional PIDs
 # shellcheck disable=SC2120
 function wait_bg {
+    echo "wait_bg called with" "$@"
     # When we receive a list of PIDs those may be already finished, and we'll
     # get an error complaining those are not children
     wait -f "$@" 2>/dev/null
